@@ -16,7 +16,8 @@ class Persona {
 }
 
 
-let Usuarios = localStorage.getItem("usuarios");
+
+/* let Usuarios = localStorage.getItem("usuarios");
 
 if (!Usuarios) {
     Usuarios = [
@@ -29,7 +30,23 @@ if (!Usuarios) {
 }
 else {
     Usuarios = JSON.parse(Usuarios);
-}
+} */
+
+
+
+// Escribo lo anterior con operador ternario para esta entrega
+
+let usuariosLocalStorage = localStorage.getItem("usuarios");
+let Usuarios = usuariosLocalStorage ? JSON.parse(usuariosLocalStorage) : [
+    new Persona("MARGE", "1234", "APPLE", 30000, 20, 10, "PREMIUM", "SI"),
+    new Persona("HOMERO", "4321", "MICROSOFT", 15000, 10, 15, "ADVANCED", "NO"),
+    new Persona("BART", "6789", "SAMSUNG", 5000, 5, 6, "STANDARD", "NO")
+];
+// Sobrescribo usuarios con lo mismo si ya existian, no cambia nada en este caso
+localStorage.setItem("usuarios", JSON.stringify(Usuarios));
+
+
+
 
 // Creacion de nuevo usuario
 const formularioUsuario = document.getElementById("formulario-usuario");
@@ -48,7 +65,13 @@ function crearNuevoUsuario(event) {
     Usuarios.push(nuevoUsuario);
     localStorage.setItem("usuarios", JSON.stringify(Usuarios));
 
-    alert("Usuario creado correctamente");
+    Swal.fire({
+        position: 'top-end',
+        icon: 'success',
+        title: 'Usuario creado',
+        showConfirmButton: false,
+        timer: 1500
+    });
 }
 
 // Panel para ingresar con usuario existente
@@ -76,7 +99,6 @@ function ingresarUserExistente(form) {
     // Recuperar usuarios del Local Storage
     let Usuarios = JSON.parse(localStorage.getItem("usuarios"));
 
-
     if (Usuarios) {
         for (let i = 0; i < Usuarios.length; i++) {
             let usuario = Usuarios[i];
@@ -90,17 +112,48 @@ function ingresarUserExistente(form) {
     }
 
     if (!encontrado) {
-        alert("El usuario o contraseña ingresado es incorrecto");
+        Swal.fire({
+            icon: 'error',
+            text: 'Contraseña o usuario incorrecto'
+        })
         return;
     }
 
     window.location.href = "./html/home.html";
 }
 
+// Recuperar contraseña
+const recuperarContraBtn = document.getElementById('recuperarContraseña');
+
+if (recuperarContraBtn) {
+    recuperarContraBtn.addEventListener('click', () => {
+        Swal.fire({
+            title: 'Contactese con mailfalso',
+            text: 'Envíe un correo electrónico a mailfalso@gmail.com para recuperar su contraseña.',
+            icon: 'info',
+            confirmButtonText: 'Aceptar'
+        });
+    });
+}
+
+
 // Esperar eventos en el panel home, tiene que interactuar el usuario
 let homePanel = document.getElementById("contenedor-home");
 
+
+
 if (homePanel) {
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!localStorage.getItem('modalMostrado')) {
+            Swal.fire({
+                title: '¡Bienvenido a nuestra plataforma de creditos!',
+                text: 'Recuerde entregar el informe antes del 15 de cada mes',
+                icon: 'info',
+                confirmButtonText: 'Cerrar'
+            });
+            localStorage.setItem('modalMostrado', 'true');
+        }
+    });
     funcionesUsuario();
 
     homePanel.children[1].children[0].addEventListener("click", function () {
@@ -126,7 +179,7 @@ function funcionesUsuario() {
     empresaElement.textContent = `Empresa: ${persona.empresa}`;
     creditoElement.textContent = `Crédito: $${persona.credito}`;
     cuotasElement.textContent = `Cuotas: ${persona.cuotas}`;
-    antiguedadElement.textContent = `Antigüedad: ${persona.antiguedad}`;
+    antiguedadElement.textContent = `Antigüedad: ${persona.antiguedad} años`;
     categoriaElement.textContent = `Categoría: ${persona.categoria}`;
     informeElement.textContent = `Informe: ${persona.informe}`;
     valorCuotaElement.textContent = `Valor de cuota mensual: $${persona.valorCuota.toFixed(2)}`;
@@ -148,6 +201,13 @@ if (formularioCredito) {
         let nohabilitado = creditoPorCategoria(monto + persona.credito, cuotas + persona.cuotas, persona);
 
         if (!nohabilitado) {
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Monto actualizado',
+                showConfirmButton: false,
+                timer: 1500
+            });
             for (let element of Usuarios) {
                 if (persona.nombre == element.nombre) {
                     element.credito = element.credito + monto;
@@ -158,6 +218,12 @@ if (formularioCredito) {
                     break;
                 }
             }
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Oops...',
+                text: 'No cuenta con la categoría para solicitar el monto',
+            });
         }
     });
 }
@@ -165,19 +231,11 @@ if (formularioCredito) {
 function creditoPorCategoria(monto, cuotas, persona) {
     let categoria = persona.categoria;
 
-    if ((monto <= 10000 && cuotas <= 10) && categoria == "STANDARD") {
-        alert("Monto actualizado");
-        return false;
-    } else if ((monto <= 20000 && cuotas <= 15) && categoria == "ADVANCED") {
-        alert("Monto actualizado");
-        return false;
-    } else if ((monto <= 40000 && cuotas <= 30) && categoria == "PREMIUM") {
-        alert("Monto actualizado");
-        return false;
-    } else {
-        alert("No cuenta con la categoría para solicitar el monto");
-        return true;
-    }
+    return !(
+        (categoria === "STANDARD" && monto <= 10000 && cuotas <= 10) ||
+        (categoria === "ADVANCED" && monto <= 20000 && cuotas <= 15) ||
+        (categoria === "PREMIUM" && monto <= 40000 && cuotas <= 30)
+    );
 }
 
 
@@ -190,236 +248,78 @@ if (subidaInforme) {
         let persona = JSON.parse(localStorage.getItem("usuario"));
 
         if (persona.informe === "SI") {
-            alert("Ya se entregó el informe anteriormente");
-        } 
-        else {
+            Swal.fire({
+                icon: 'warning',
+                text: 'Ya se entregó el informe anteriormente',
+            });
+        } else {
             for (let element of Usuarios) {
                 if (persona.nombre == element.nombre) {
                     element.informe = "SI";
                     localStorage.setItem("usuarios", JSON.stringify(Usuarios));
                     localStorage.setItem("usuario", JSON.stringify(element));
+                    let informeElement = document.getElementById("informe");
+                    informeElement.innerHTML = `<p>Informe: ${element.informe}</p>`;
                     break;
                 }
             }
-            alert("Informe subido correctamente");
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Informe subido correctamente',
+                showConfirmButton: false,
+                timer: 1500
+            });
         }
 
-        location.reload(); // Recargo la página para ver los cambios
+
     });
 }
 
-
-// Cerrar sesion borrando la info del usuario que habia entrado
+// Cerrar sesion borrando la info del usuario que habia entrado y el modal de bienvenida
 const finSesion = document.getElementsByClassName("cerrar-sesion")[0];
+
 
 if (finSesion) {
     finSesion.addEventListener("click", () => {
         localStorage.removeItem("usuario");
+        localStorage.removeItem("modalMostrado");
     });
 }
+// Api tipo de cambio https://www.exchangerate-api.com/
 
+const apiKey = 'd237ada023cf51f167b1dd14';
+const apiUrl1 = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`;
+const apiUrl2 = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/EUR`;
 
+fetch(`${apiUrl1}`)
+    .then(response => response.json())
+    .then(data => {
+        const arsExchangeRate = data.conversion_rates.ARS;
 
+        const exchangeRatesElement = document.getElementById('exchangeRates');
+        exchangeRatesElement.innerHTML = `
+            <li><p>1 USD = ${arsExchangeRate} ARS</p></li>
+        `
+    })
+    .catch(error => {
+        console.error('Error al obtener los tipos de cambio:', error);
+    });
 
-// Clase administradores
-/* class Admins {
-    constructor(nombre, password, empresa) {
-        this.nombre = nombre;
-        this.password = password,
-            this.empresa = empresa;
-    }
-}
+fetch(`${apiUrl2}`)
+    .then(response => response.json())
+    .then(data => {
 
-const Administradores = [
-    new Admins("GABRIEL", 1234, "NEW HOLLAND"),
-    new Admins("LUCAS", 5678, "CNH CAPITAL")
-]
- */
-/*
+        const arsExchangeRate = data.conversion_rates.ARS;
 
-// Panel interactivo Log in
-let check = true;
-let opcionIngresada;
+        const exchangeRatesElement = document.getElementById('exchangeRates');
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <p>1 EUR = ${arsExchangeRate} ARS</p>
+        `
+        exchangeRatesElement.append(li);
+    })
+    .catch(error => {
+        console.error('Error al obtener los tipos de cambio:', error);
+    });
 
-while(check){
-
-    alert("Plataforma de concesionarios: panel de incio, seleccione la opcion a realizar");
-    let check2 = true;
-    while(check2){
-        opcionIngresada = parseInt(prompt("1- Ingresar con usuario existente \n2- Crear un usuario nuevo \n3- Ingresar con usuario de administrador"));
-        switch (opcionIngresada){
-            case 1:
-                ingresarUserExistente();
-                check2=false;
-                break;
-
-            case 2:
-                crearUsuario();
-                check2=false;
-                break;
-
-            case 3:
-                check = ingresarUserAdmin();
-                check2=false;
-                break;
-
-            default:
-                alert("No se ingreso una opcion valida, vuelva a intentarlo");
-                break;    
-        }
-    }
-
-}
-
-// Funciones usuarios existentes 
-
-function visualizarCamposObjetos(objeto){
-    texto_total="";
-    let claves = Object.keys(objeto);
-    for (let clave of claves) {
-        texto_total = texto_total + ("\n" +clave + ": " + objeto[clave]);
-    }   
-    return texto_total;
-}
-
-
-
-function pedirMasCredito(user){
-    let check4 = true;
-    let creditoNuevo;
-    let cuotasNuevas;
-
-    creditoNuevo = parseFloat(prompt("Ingrese el nuevo monto solicitado"));
-    cuotasNuevas = parseFloat(prompt("En caso de necesitar mas cuotas ingreselas"));
-
-    check4 = creditoPorCategoria(user.credito+creditoNuevo,user.cuotas+cuotasNuevas,user.categoria);
-
-
-    while(check4){
-        alert("No cuenta con la categoria para solicitar el monto y la cantidad de cuotas");
-        creditoNuevo = parseFloat(prompt("Ingrese nuevamente el credito"));
-        cuotasNuevas = parseFloat(prompt("Ingrese nuevamente las cuotas"));
-
-        check4 = creditoPorCategoria(user.credito+creditoNuevo,user.cuotas+cuotasNuevas,user.categoria);
-    }
-    user.agregarCredito(creditoNuevo,cuotasNuevas);
-    alert("A continuacion se muestran sus datos actualizados" + visualizarCamposObjetos(user));
-}
-
-
-
-
-
-// Funciones usuario nuevo
-
-function crearUsuario(){
-    let nombre;
-    let empresa;
-    let credito;
-    let cuotas;
-    let categoria;
-    let check5 = true;
-
-    nombre = prompt("Ingrese su nombre de usuario").toLocaleUpperCase();
-    empresa = prompt("Ingrese su empresa").toLocaleUpperCase();
-    credito = parseFloat(prompt("Ingrese el credito que necesita"));
-    cuotas = parseFloat(prompt("Ingrese las cuotas que desea"));
-    categoria = "STANDARD";
-    check5 = creditoPorCategoria(credito,cuotas,categoria);
-    while(check5){
-        alert("No cuenta con la categoria para solicitar el monto y la cantidad de cuotas")
-        credito = parseFloat(prompt("Ingrese nuevamente el credito"));
-        cuotas = parseFloat(prompt("Ingrese nuevamente las cuotas"));
-        check5 = creditoPorCategoria(credito,cuotas,categoria);
-    }
-    Usuarios.push( new Persona(nombre, empresa, credito, cuotas, 0,categoria,"NO"));
-    alert("Usuario creado, ingrese desde el panel de inicio con su nombre");
-    
-}
-
-// Funciones administradores
-
-function visualizarUsuarios(){
-    let texto_total="";
-
-    Usuarios.forEach( (usuario)=> {
-        texto_total = texto_total + usuario.nombre +"\n";
-    } )
-
-    alert(texto_total)
-}
-
-function buscarUsuario(){
-    let user;
-    user = prompt("Ingrese el nombre del usuario que desea buscar").toLocaleUpperCase();
-    const resultado = Usuarios.find((elemento) => elemento.nombre === user);
-    if(!resultado){
-        alert("No se encontro el usuario especificado");
-        return;
-    }
-    alert(visualizarCamposObjetos(resultado));
-
-}
-
-function filtrarInformes(){
-    const resultado2 = Usuarios.filter((el) => el.informe == "NO");
-    console.table(resultado2);
-}
-
-function funcionesAdministrador(user){
-    let check6 = true;
-    let eleccion;
-
-    alert("Bienvenido nuevamente "+ user.nombre +"\nEmpresa: "+user.empresa);
-
-    while(check6){
-
-        eleccion = parseInt(prompt("Que desea realizar? \n1- Visualizar nombres de usuarios creados \n2- Visualizar datos de un usuario por nombre \n3- Visualizar por consola usuarios sin entrega de informe \n4- Cerrar sesion \n5- Detener ejecucion de la pagina"));
-        if (eleccion == 1){ 
-            visualizarUsuarios();
-        }
-        else if (eleccion == 2){ 
-            buscarUsuario();
-        }
-        else if (eleccion == 3){
-            filtrarInformes();
-        }
-        else if (eleccion == 4){
-            alert("Sesion finalizada. Adios")
-            check6 = false;
-        }
-        else if (eleccion == 5){
-            alert("FIN DEL PROGRAMA");
-            return false;
-        }
-        else{
-            alert("No se ingreso una opcion valida")
-        }
-
-    }
-    return true;
-}
-*/
-
-/* function ingresarUserAdmin(){
-    let usuarioIngresado;
-    let posicionUsuario;
-    let checkFinalizar;
-
-    usuarioIngresado = prompt("Ingrese su nombre de administrador").toLocaleUpperCase();
-    for (let element of Administradores){
-        if(usuarioIngresado == element.nombre){
-            posicionUsuario =  Administradores.indexOf(element);
-            break;
-        }
-    }
-    if(!(posicionUsuario+1)){
-        alert("No se encontro el adminsitrador especificado")
-        return true;
-    }
-
-    checkFinalizar = funcionesAdministrador(Administradores[posicionUsuario]);
-    return checkFinalizar
-    
-}
- */

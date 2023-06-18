@@ -6,36 +6,41 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PROYECTO FINAL BACIGALUPPI</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.20/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="../css/estilo.css">
 </head>
 
 <body>
-    <header>
-        <h1>Pagina principal</h1>
-        <a href="../index.html" class="cerrar-sesion">Cerrar sesion</a>
-    </header>
+    <div class="container-home">
+        <header>
+            <a href="../index.html" class="cerrar-sesion">Cerrar sesion</a>
+            <h1>Pagina principal</h1>
+        </header>
 
-    <main id="contenedor-home">
-        <div>
-            <h2>A continuacion se muestran sus datos:</h2>
-            <p id="nombre"></p>
-            <p id="empresa"></p>
-            <p id="credito"></p>
-            <p id="cuotas"></p>
-            <p id="valorCuota"></p>
-            <p id="antiguedad"></p>
-            <p id="categoria"></p>
-            <p id="informe"></p>
-        </div>
-        <div>
-            <button id="solicitudCredito">Solicitar mas credito</button>
-            <button id="subirInforme">Subir Informe Dealer Standard</button>
-        </div>
+        <main id="contenedor-home">
+            <div>
+                <h2>A continuacion se muestran sus datos:</h2>
+                <p id="nombre"></p>
+                <p id="empresa"></p>
+                <p id="credito"></p>
+                <p id="cuotas"></p>
+                <p id="valorCuota"></p>
+                <p id="antiguedad"></p>
+                <p id="categoria"></p>
+                <p id="informe"></p>
+            </div>
+            <div>
+                <button id="solicitudCredito">Solicitar mas credito</button>
+                <button id="subirInforme">Subir Informe Dealer Standard</button>
+            </div>
 
-    </main>
+        </main>
 
-    <footer></footer>
+        <footer></footer>
+    </div>
+
     <script src="../js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>
